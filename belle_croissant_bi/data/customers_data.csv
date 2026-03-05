@@ -1,0 +1,16 @@
+CustomerID,Name,Email,JoinDate,City,Country
+1,Jean Dupont,jean.dupont@email.com,2023-01-15,Lyon,France
+2,Marie Laurent,marie.laurent@email.com,2023-02-20,Paris,France
+3,Pierre Martin,pierre.martin@email.com,2023-03-10,Lyon,France
+4,Sophie Dubois,sophie.dubois@email.com,2023-04-05,Marseille,France
+5,Lucas Bernard,lucas.bernard@email.com,2023-05-12,Lyon,France
+6,Emma Petit,emma.petit@email.com,2023-06-18,Paris,France
+7,Louis Robert,louis.robert@email.com,2023-07-22,Lyon,France
+8,Chloé Richard,chloe.richard@email.com,2023-08-30,Nice,France
+9,Hugo Simon,hugo.simon@email.com,2023-09-14,Lyon,France
+10,Léa Michel,lea.michel@email.com,2023-10-08,Toulouse,France
+11,Nathan Lefebvre,nathan.lefebvre@email.com,2023-11-25,Lyon,France
+12,Camille Moreau,camille.moreau@email.com,2023-12-03,Paris,France
+13,Gabriel Laurent,gabriel.laurent@email.com,2024-01-10,Lyon,France
+14,Manon Garcia,manon.garcia@email.com,2024-02-14,Bordeaux,France
+15,Arthur Roux,arthur.roux@email.com,2024-03-20,Lyon,France

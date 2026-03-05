@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Belle Croissant Lyonnais - Dashboard</title>
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .header h1 { font-size: 2.5em; margin-bottom: 10px; }
+        .nav {
+            background: white;
+            display: flex;
+            justify-content: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        .nav button {
+            background: none;
+            border: none;
+            padding: 20px 30px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            color: #667eea;
+            border-bottom: 3px solid transparent;
+        }
+        .nav button:hover { background: #f5f7fa; }
+        .nav button.active { border-bottom: 3px solid #667eea; }
+        .container { max-width: 1400px; margin: 30px auto; padding: 0 20px; }
+        .page { display: none; animation: fadeIn 0.5s; }
+        .page.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .stat-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .stat-box .value { font-size: 2.5em; font-weight: bold; }
+        .stat-box .label { font-size: 0.9em; opacity: 0.9; }
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .card h3 {
+            color: #667eea;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #f5f7fa;
+            padding-bottom: 10px;
+        }
+        .chart { min-height: 400px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🥐 Belle Croissant Lyonnais</h1>
+        <p>Business Intelligence Dashboard</p>
+    </div>
+
+    <nav class="nav">
+        <button onclick="showPage('feedback')" class="active">Customer Feedback</button>
+        <button onclick="showPage('social')">Social Media</button>
+        <button onclick="showPage('website')">Website Traffic</button>
+        <button onclick="showPage('loyalty')">Loyalty Program</button>
+    </nav>
+
+    <div class="container">
+        <!-- Customer Feedback -->
+        <div id="feedback" class="page active">
+            <div class="stats-grid">
+                <div class="stat-box"><div class="value">30</div><div class="label">Всего отзывов</div></div>
+                <div class="stat-box"><div class="value">3.63</div><div class="label">Средний рейтинг</div></div>
+                <div class="stat-box"><div class="value">63%</div><div class="label">Позитивные</div></div>
+            </div>
+            <div class="dashboard-grid">
+                <div class="card"><h3>📈 Рейтинг по неделям</h3><div id="rating-time" class="chart"></div></div>
+                <div class="card"><h3>⭐ Распределение рейтингов</h3><div id="rating-dist" class="chart"></div></div>
+                <div class="card"><h3>💭 Sentiment</h3><div id="sentiment" class="chart"></div></div>
+                <div class="card"><h3>✅ Топ позитивные слова</h3><div id="pos-words" class="chart"></div></div>
+            </div>
+        </div>
+
+        <!-- Social Media -->
+        <div id="social" class="page">
+            <div class="stats-grid">
+                <div class="stat-box"><div class="value">30</div><div class="label">Постов</div></div>
+                <div class="stat-box"><div class="value">5,067</div><div class="label">Лайков</div></div>
+                <div class="stat-box"><div class="value">5,289</div><div class="label">Вовлечение</div></div>
+            </div>
+            <div class="dashboard-grid">
+                <div class="card"><h3>📱 По платформам</h3><div id="social-platform" class="chart"></div></div>
+            </div>
+        </div>
+
+        <!-- Website -->
+        <div id="website" class="page">
+            <div class="stats-grid">
+                <div class="stat-box"><div class="value">9,689</div><div class="label">Просмотров</div></div>
+                <div class="stat-box"><div class="value">7,034</div><div class="label">Посетителей</div></div>
+            </div>
+            <div class="dashboard-grid">
+                <div class="card"><h3>🏆 Топ страницы</h3><div id="top-pages" class="chart"></div></div>
+            </div>
+        </div>
+
+        <!-- Loyalty -->
+        <div id="loyalty" class="page">
+            <div class="stats-grid">
+                <div class="stat-box"><div class="value">15</div><div class="label">Участников</div></div>
+                <div class="stat-box"><div class="value">62.86</div><div class="label">Средние баллы</div></div>
+            </div>
+            <div class="dashboard-grid">
+                <div class="card"><h3>🏆 Топ клиенты</h3><div id="top-customers" class="chart"></div></div>
+                <div class="card"><h3>🎖️ Уровни</h3><div id="tier-dist" class="chart"></div></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showPage(id) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav button').forEach(b => b.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // Rating over time
+        Plotly.newPlot('rating-time', [{
+            x: ['2024-W01', '2024-W02', '2024-W03', '2024-W04', '2024-W05', '2024-W06', '2024-W07', '2024-W08'],
+            y: [3.5, 3.0, 4.0, 3.75, 3.67, 3.67, 3.5, 4.0],
+            type: 'scatter',
+            mode: 'lines+markers',
+            line: {color: '#667eea', width: 3},
+            marker: {size: 8}
+        }], {
+            xaxis: {title: 'Неделя'},
+            yaxis: {title: 'Средний рейтинг'},
+            paper_bgcolor: 'rgba(0,0,0,0)',
+            plot_bgcolor: 'rgba(0,0,0,0)'
+        }, {responsive: true});
+
+        // Rating distribution
+        Plotly.newPlot('rating-dist', [{
+            labels: ['1 звезда', '2 звезды', '3 звезды', '4 звезды', '5 звезд'],
+            values: [4, 4, 3, 8, 11],
+            type: 'pie',
+            hole: 0.4,
+            marker: {colors: ['#667eea', '#764ba2', '#f093fb', '#4facfe', '#43e97b']}
+        }], {
+            paper_bgcolor: 'rgba(0,0,0,0)',
+            plot_bgcolor: 'rgba(0,0,0,0)'
+        }, {responsive: true});
+
+        // Sentiment
+        Plotly.newPlot('sentiment', [{
+            labels: ['Positive', 'Negative', 'Neutral'],
+            values: [19, 9, 2],
+            type: 'pie',
+            hole: 0.4,
+            marker: {colors: ['#43e97b', '#f093fb', '#667eea']}
+        }], {
+            paper_bgcolor: 'rgba(0,0,0,0)',
+            plot_bgcolor: 'rgba(0,0,0,0)'
+        }, {responsive: true});
+
+        // Positive words
+        Plotly.newPlot('pos-words', [{
+            x: ['excellent', 'amazing', 'love', 'recommend', 'delicious'],
+            y: [8, 7, 7, 6, 6],
+            type: 'bar',
+            marker: {color: '#667eea'}
+        }], {
+            xaxis: {title: 'Слово'},
+            yaxis: {title: 'Количество'},
+            paper_bgcolor: 'rgba(0,0,0,0)',
+            plot_bgcolor: 'rgba(0,0,0,0)'
+        }, {responsive: true});
+
+        // Social platforms
+        Plotly.newPlot('social-platform', [
+            {x: ['Instagram', 'Facebook', 'Twitter'], y: [2067, 1467, 945], type: 'bar', name: 'Лайки', marker: {color: '#667eea'}},
+            {x: ['Instagram', 'Facebook', 'Twitter'], y: [512, 305, 276], type: 'bar', name: 'Репосты', marker: {color: '#f093fb'}},
+            {x: ['Instagram', 'Facebook', 'Twitter'], y: [251, 161, 107], type: 'bar', name: 'Комментарии', marker: {color: '#4facfe'}}
+        ], {
+            barmode: 'group',
+            paper_bgcolor: 'rgba(0,0,0,0)',
+            plot_bgcolor: 'rgba(0,0,0,0)'
+        }, {responsive: true});
+
+        // Top pages
+        Plotly.newPlot('top-pages', [{
+            x: ['/home', '/menu', '/locations', '/about', '/contact'],
+            y: [3623, 2368, 1386, 1173, 706],
+            type: 'bar',
+            marker: {color: '#667eea'}
+        }], {
+            xaxis: {title: 'Страница'},
+            yaxis: {title: 'Просмотры'},
+            paper_bgcolor: 'rgba(0,0,0,0)',
+            plot_bgcolor: 'rgba(0,0,0,0)'
+        }, {responsive: true});
+
+        // Top customers
+        Plotly.newPlot('top-customers', [{
+            x: ['Customer 13', 'Customer 11', 'Customer 6', 'Customer 15', 'Customer 7'],
+            y: [230, 200, 190, 170, 165],
+            type: 'bar',
+            marker: {color: '#667eea'}
+        }], {
+            xaxis: {title: 'Клиент'},
+            yaxis: {title: 'Баллы'},
+            paper_bgcolor: 'rgba(0,0,0,0)',
+            plot_bgcolor: 'rgba(0,0,0,0)'
+        }, {responsive: true});
+
+        // Tier distribution
+        Plotly.newPlot('tier-dist', [{
+            labels: ['Basic', 'Silver', 'Gold', 'Platinum'],
+            values: [14, 1, 0, 0],
+            type: 'pie',
+            hole: 0.4,
+            marker: {colors: ['#667eea', '#764ba2', '#f093fb', '#4facfe']}
+        }], {
+            paper_bgcolor: 'rgba(0,0,0,0)',
+            plot_bgcolor: 'rgba(0,0,0,0)'
+        }, {responsive: true});
+
+        console.log('Dashboard loaded!');
+    </script>
+</body>
+</html>
