@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Belle Croissant Lyonnais - Dashboard</title>
     <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <script src="dashboard-data.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -27,6 +28,7 @@
             position: sticky;
             top: 0;
             z-index: 1000;
+            overflow-x: auto;
         }
         .nav button {
             background: none;
@@ -62,7 +64,7 @@
         .stat-box .label { font-size: 0.9em; opacity: 0.9; }
         .dashboard-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 400px), 1fr));
             gap: 20px;
         }
         .card {
@@ -87,34 +89,35 @@
     </div>
 
     <nav class="nav">
-        <button onclick="showPage('feedback')" class="active">Customer Feedback</button>
-        <button onclick="showPage('social')">Social Media</button>
-        <button onclick="showPage('website')">Website Traffic</button>
-        <button onclick="showPage('loyalty')">Loyalty Program</button>
+        <button onclick="showPage('feedback', this)" class="active">Customer Feedback</button>
+        <button onclick="showPage('social', this)">Social Media</button>
+        <button onclick="showPage('website', this)">Website Traffic</button>
+        <button onclick="showPage('loyalty', this)">Loyalty Program</button>
     </nav>
 
     <div class="container">
+        <p id="chart-status" role="status"></p>
         <!-- Customer Feedback -->
         <div id="feedback" class="page active">
             <div class="stats-grid">
-                <div class="stat-box"><div class="value">30</div><div class="label">Всего отзывов</div></div>
-                <div class="stat-box"><div class="value">3.63</div><div class="label">Средний рейтинг</div></div>
-                <div class="stat-box"><div class="value">63%</div><div class="label">Позитивные</div></div>
+                <div class="stat-box"><div class="value" id="feedback-count">—</div><div class="label">Всего отзывов</div></div>
+                <div class="stat-box"><div class="value" id="feedback-average">—</div><div class="label">Средний рейтинг</div></div>
+                <div class="stat-box"><div class="value" id="feedback-positive">—</div><div class="label">Оценки 4–5</div></div>
             </div>
             <div class="dashboard-grid">
                 <div class="card"><h3>📈 Рейтинг по неделям</h3><div id="rating-time" class="chart"></div></div>
                 <div class="card"><h3>⭐ Распределение рейтингов</h3><div id="rating-dist" class="chart"></div></div>
                 <div class="card"><h3>💭 Sentiment</h3><div id="sentiment" class="chart"></div></div>
-                <div class="card"><h3>✅ Топ позитивные слова</h3><div id="pos-words" class="chart"></div></div>
+                <div class="card"><h3>📝 Отзывов по неделям</h3><div id="feedback-volume" class="chart"></div></div>
             </div>
         </div>
 
         <!-- Social Media -->
         <div id="social" class="page">
             <div class="stats-grid">
-                <div class="stat-box"><div class="value">30</div><div class="label">Постов</div></div>
-                <div class="stat-box"><div class="value">5,067</div><div class="label">Лайков</div></div>
-                <div class="stat-box"><div class="value">5,289</div><div class="label">Вовлечение</div></div>
+                <div class="stat-box"><div class="value" id="social-posts">—</div><div class="label">Постов</div></div>
+                <div class="stat-box"><div class="value" id="social-likes">—</div><div class="label">Лайков</div></div>
+                <div class="stat-box"><div class="value" id="social-engagement">—</div><div class="label">Лайки + репосты + комментарии</div></div>
             </div>
             <div class="dashboard-grid">
                 <div class="card"><h3>📱 По платформам</h3><div id="social-platform" class="chart"></div></div>
@@ -124,8 +127,8 @@
         <!-- Website -->
         <div id="website" class="page">
             <div class="stats-grid">
-                <div class="stat-box"><div class="value">9,689</div><div class="label">Просмотров</div></div>
-                <div class="stat-box"><div class="value">7,034</div><div class="label">Посетителей</div></div>
+                <div class="stat-box"><div class="value" id="website-pageviews">—</div><div class="label">Просмотров</div></div>
+                <div class="stat-box"><div class="value" id="website-visitors">—</div><div class="label">Сумма UniqueVisitors по строкам</div></div>
             </div>
             <div class="dashboard-grid">
                 <div class="card"><h3>🏆 Топ страницы</h3><div id="top-pages" class="chart"></div></div>
@@ -135,126 +138,84 @@
         <!-- Loyalty -->
         <div id="loyalty" class="page">
             <div class="stats-grid">
-                <div class="stat-box"><div class="value">15</div><div class="label">Участников</div></div>
-                <div class="stat-box"><div class="value">62.86</div><div class="label">Средние баллы</div></div>
+                <div class="stat-box"><div class="value" id="loyalty-customers">—</div><div class="label">Клиентов в CSV</div></div>
+                <div class="stat-box"><div class="value" id="loyalty-members">—</div><div class="label">Участников с транзакциями</div></div>
+                <div class="stat-box"><div class="value" id="loyalty-average">—</div><div class="label">Средний последний баланс</div></div>
             </div>
             <div class="dashboard-grid">
                 <div class="card"><h3>🏆 Топ клиенты</h3><div id="top-customers" class="chart"></div></div>
-                <div class="card"><h3>🎖️ Уровни</h3><div id="tier-dist" class="chart"></div></div>
+                <div class="card"><h3>🎖️ Типы транзакций</h3><div id="loyalty-actions" class="chart"></div></div>
             </div>
         </div>
     </div>
 
     <script>
-        function showPage(id) {
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            document.querySelectorAll('.nav button').forEach(b => b.classList.remove('active'));
+        function showPage(id, button) {
+            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+            document.querySelectorAll('.nav button').forEach(item => item.classList.remove('active'));
             document.getElementById(id).classList.add('active');
-            event.target.classList.add('active');
+            button.classList.add('active');
+            requestAnimationFrame(() => window.dispatchEvent(new Event('resize')));
         }
 
-        // Rating over time
-        Plotly.newPlot('rating-time', [{
-            x: ['2024-W01', '2024-W02', '2024-W03', '2024-W04', '2024-W05', '2024-W06', '2024-W07', '2024-W08'],
-            y: [3.5, 3.0, 4.0, 3.75, 3.67, 3.67, 3.5, 4.0],
-            type: 'scatter',
-            mode: 'lines+markers',
-            line: {color: '#667eea', width: 3},
-            marker: {size: 8}
-        }], {
-            xaxis: {title: 'Неделя'},
-            yaxis: {title: 'Средний рейтинг'},
-            paper_bgcolor: 'rgba(0,0,0,0)',
-            plot_bgcolor: 'rgba(0,0,0,0)'
-        }, {responsive: true});
+        const data = window.dashboardData;
+        const status = document.getElementById('chart-status');
+        if (!data) {
+            status.textContent = 'Данные dashboard-data.js не найдены. Запустите build_dashboard_data.py.';
+        } else {
+            const fmt = value => Number(value).toLocaleString('ru-RU', {maximumFractionDigits: 2});
+            const setStat = (id, value) => { document.getElementById(id).textContent = value; };
+            setStat('feedback-count', fmt(data.feedback.count));
+            setStat('feedback-average', fmt(data.feedback.average));
+            setStat('feedback-positive', fmt(data.feedback.positive_pct) + '%');
+            setStat('social-posts', fmt(data.social.posts));
+            setStat('social-likes', fmt(data.social.likes));
+            setStat('social-engagement', fmt(data.social.engagement));
+            setStat('website-pageviews', fmt(data.website.pageviews));
+            setStat('website-visitors', fmt(data.website.unique_visitors_sum));
+            setStat('loyalty-customers', fmt(data.loyalty.customers_total));
+            setStat('loyalty-members', fmt(data.loyalty.members));
+            setStat('loyalty-average', fmt(data.loyalty.average_balance));
 
-        // Rating distribution
-        Plotly.newPlot('rating-dist', [{
-            labels: ['1 звезда', '2 звезды', '3 звезды', '4 звезды', '5 звезд'],
-            values: [4, 4, 3, 8, 11],
-            type: 'pie',
-            hole: 0.4,
-            marker: {colors: ['#667eea', '#764ba2', '#f093fb', '#4facfe', '#43e97b']}
-        }], {
-            paper_bgcolor: 'rgba(0,0,0,0)',
-            plot_bgcolor: 'rgba(0,0,0,0)'
-        }, {responsive: true});
-
-        // Sentiment
-        Plotly.newPlot('sentiment', [{
-            labels: ['Positive', 'Negative', 'Neutral'],
-            values: [19, 9, 2],
-            type: 'pie',
-            hole: 0.4,
-            marker: {colors: ['#43e97b', '#f093fb', '#667eea']}
-        }], {
-            paper_bgcolor: 'rgba(0,0,0,0)',
-            plot_bgcolor: 'rgba(0,0,0,0)'
-        }, {responsive: true});
-
-        // Positive words
-        Plotly.newPlot('pos-words', [{
-            x: ['excellent', 'amazing', 'love', 'recommend', 'delicious'],
-            y: [8, 7, 7, 6, 6],
-            type: 'bar',
-            marker: {color: '#667eea'}
-        }], {
-            xaxis: {title: 'Слово'},
-            yaxis: {title: 'Количество'},
-            paper_bgcolor: 'rgba(0,0,0,0)',
-            plot_bgcolor: 'rgba(0,0,0,0)'
-        }, {responsive: true});
-
-        // Social platforms
-        Plotly.newPlot('social-platform', [
-            {x: ['Instagram', 'Facebook', 'Twitter'], y: [2067, 1467, 945], type: 'bar', name: 'Лайки', marker: {color: '#667eea'}},
-            {x: ['Instagram', 'Facebook', 'Twitter'], y: [512, 305, 276], type: 'bar', name: 'Репосты', marker: {color: '#f093fb'}},
-            {x: ['Instagram', 'Facebook', 'Twitter'], y: [251, 161, 107], type: 'bar', name: 'Комментарии', marker: {color: '#4facfe'}}
-        ], {
-            barmode: 'group',
-            paper_bgcolor: 'rgba(0,0,0,0)',
-            plot_bgcolor: 'rgba(0,0,0,0)'
-        }, {responsive: true});
-
-        // Top pages
-        Plotly.newPlot('top-pages', [{
-            x: ['/home', '/menu', '/locations', '/about', '/contact'],
-            y: [3623, 2368, 1386, 1173, 706],
-            type: 'bar',
-            marker: {color: '#667eea'}
-        }], {
-            xaxis: {title: 'Страница'},
-            yaxis: {title: 'Просмотры'},
-            paper_bgcolor: 'rgba(0,0,0,0)',
-            plot_bgcolor: 'rgba(0,0,0,0)'
-        }, {responsive: true});
-
-        // Top customers
-        Plotly.newPlot('top-customers', [{
-            x: ['Customer 13', 'Customer 11', 'Customer 6', 'Customer 15', 'Customer 7'],
-            y: [230, 200, 190, 170, 165],
-            type: 'bar',
-            marker: {color: '#667eea'}
-        }], {
-            xaxis: {title: 'Клиент'},
-            yaxis: {title: 'Баллы'},
-            paper_bgcolor: 'rgba(0,0,0,0)',
-            plot_bgcolor: 'rgba(0,0,0,0)'
-        }, {responsive: true});
-
-        // Tier distribution
-        Plotly.newPlot('tier-dist', [{
-            labels: ['Basic', 'Silver', 'Gold', 'Platinum'],
-            values: [14, 1, 0, 0],
-            type: 'pie',
-            hole: 0.4,
-            marker: {colors: ['#667eea', '#764ba2', '#f093fb', '#4facfe']}
-        }], {
-            paper_bgcolor: 'rgba(0,0,0,0)',
-            plot_bgcolor: 'rgba(0,0,0,0)'
-        }, {responsive: true});
-
-        console.log('Dashboard loaded!');
+            if (typeof Plotly === 'undefined') {
+                status.textContent = 'Для графиков требуется загрузить Plotly с CDN.';
+            } else {
+                const layout = {paper_bgcolor: 'rgba(0,0,0,0)', plot_bgcolor: 'rgba(0,0,0,0)', margin: {t: 24}};
+                const options = {responsive: true};
+                Plotly.newPlot('rating-time', [{
+                    x: data.feedback.weeks, y: data.feedback.weekly_average,
+                    type: 'scatter', mode: 'lines+markers', line: {color: '#667eea'}
+                }], {...layout, xaxis: {title: 'Неделя'}, yaxis: {title: 'Средний рейтинг', range: [0, 5]}}, options);
+                Plotly.newPlot('rating-dist', [{
+                    labels: ['1', '2', '3', '4', '5'], values: data.feedback.ratings, type: 'pie', hole: 0.4
+                }], layout, options);
+                Plotly.newPlot('sentiment', [{
+                    labels: ['Оценки 4–5', 'Оценки 1–2', 'Оценка 3'],
+                    values: data.feedback.sentiment, type: 'pie', hole: 0.4
+                }], layout, options);
+                Plotly.newPlot('feedback-volume', [{
+                    x: data.feedback.weeks, y: data.feedback.weekly_count,
+                    type: 'bar', marker: {color: '#667eea'}
+                }], {...layout, xaxis: {title: 'Неделя'}, yaxis: {title: 'Отзывов'}}, options);
+                Plotly.newPlot('social-platform', [
+                    {x: data.social.platforms, y: data.social.likes_by_platform, type: 'bar', name: 'Лайки'},
+                    {x: data.social.platforms, y: data.social.shares_by_platform, type: 'bar', name: 'Репосты'},
+                    {x: data.social.platforms, y: data.social.comments_by_platform, type: 'bar', name: 'Комментарии'}
+                ], {...layout, barmode: 'group'}, options);
+                Plotly.newPlot('top-pages', [{
+                    x: data.website.top_pages, y: data.website.top_pageviews,
+                    type: 'bar', marker: {color: '#667eea'}
+                }], {...layout, yaxis: {title: 'Просмотры'}}, options);
+                Plotly.newPlot('top-customers', [{
+                    x: data.loyalty.top_customers, y: data.loyalty.top_balances,
+                    type: 'bar', marker: {color: '#667eea'}
+                }], {...layout, yaxis: {title: 'Последний баланс баллов'}}, options);
+                Plotly.newPlot('loyalty-actions', [{
+                    labels: data.loyalty.actions, values: data.loyalty.action_counts,
+                    type: 'pie', hole: 0.4
+                }], layout, options);
+            }
+        }
     </script>
 </body>
 </html>

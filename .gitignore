@@ -1,0 +1,6 @@
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+belle_croissant_bi/sql/Session7_DatabaseCredentials.txt
